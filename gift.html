@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For you 💚</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #060f08;
+    color: #f0ede4;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  #rain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .stage {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* ── Amount ── */
+  .amount-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 130px;
+    overflow: visible;
+    min-width: 340px;
+    justify-content: center;
+  }
+
+  .char {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 96px;
+    line-height: 1;
+    color: #4ade80;
+    opacity: 0;
+    transform: translateY(-160px);
+    display: inline-block;
+    text-shadow: 0 0 40px rgba(74,222,128,0.5);
+  }
+
+  .char.rupee {
+    font-size: 72px;
+    padding-bottom: 10px;
+    color: #86efac;
+  }
+
+  .char.landed {
+    animation: dropIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes dropIn {
+    0%   { opacity: 1; transform: translateY(-160px) scaleY(1.1); }
+    70%  { transform: translateY(10px) scaleY(0.92); }
+    85%  { transform: translateY(-5px) scaleY(1.03); }
+    100% { opacity: 1; transform: translateY(0) scaleY(1); }
+  }
+
+  /* ── Button ── */
+  .btn-wrap {
+    margin-top: 48px;
+  }
+
+  .btn {
+    background: #4ade80;
+    color: #060f08;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 16px 44px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 32px rgba(74,222,128,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 0 48px rgba(74,222,128,0.55);
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn.hidden { display: none; }
+
+  /* ── Glow line ── */
+  .glow {
+    width: 280px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #4ade80, transparent);
+    border-radius: 100px;
+    margin-top: 14px;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .glow.visible {
+    opacity: 1;
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+  @keyframes glowPulse {
+    0%, 100% { opacity: 0.5; transform: scaleX(0.8); }
+    50%       { opacity: 1;   transform: scaleX(1); }
+  }
+
+  /* ── Message ── */
+  .message {
+    margin-top: 28px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .message.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .message h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #6b7c3a;
+    margin-bottom: 8px;
+  }
+  .message p {
+    font-size: 0.88rem;
+    color: #4a6650;
+    line-height: 1.6;
+  }
+
+  /* ── PhonePe button ── */
+  .phonepe-wrap {
+    margin-top: 22px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.7s ease 0.2s, transform 0.7s ease 0.2s;
+  }
+  .phonepe-wrap.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .phonepe-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #5f259f;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px 32px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 0 28px rgba(95,37,159,0.45);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .phonepe-btn:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 0 42px rgba(95,37,159,0.65);
+  }
+  .phonepe-btn:active { transform: scale(0.97); }
+
+  /* ── Confetti ── */
+  .confetti-wrap {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .dot {
+    position: absolute;
+    animation: burstOut 1s ease-out forwards;
+  }
+  @keyframes burstOut {
+    from { opacity: 1; transform: translate(0,0) scale(1) rotate(0deg); }
+    to   { opacity: 0; transform: var(--tx) scale(0.15) rotate(var(--rot)); }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="rain"></canvas>
+<div class="confetti-wrap" id="confetti"></div>
+
+<div class="stage">
+  <div class="amount-row" id="amountRow"></div>
+  <div class="glow" id="glow"></div>
+
+  <div class="btn-wrap" id="btnWrap">
+    <button class="btn" id="revealBtn" onclick="startReveal()">💚 Open your gift</button>
+  </div>
+
+  <div class="phonepe-wrap" id="phonepeWrap">
+    <a class="phonepe-btn" href="intent://phonepe.com#Intent;scheme=https;package=com.phonepe.app;end">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+      Open PhonePe
+    </a>
+  </div>
+
+  <div class="message" id="message">
+    <h2>For whatever makes you smile today 💚</h2>
+    <p>For Sehar, just because.</p>
+  </div>
+</div>
+
+<script>
+// ── Rain ──
+const canvas = document.getElementById('rain');
+const ctx = canvas.getContext('2d');
+let W, H, drops = [];
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+const RAIN = ['💵','💸','🪙','💚','✨','💫','🌿'];
+
+function mkDrop() {
+  return {
+    x: Math.random() * W, y: -40,
+    vy: 1.4 + Math.random() * 2,
+    vx: (Math.random() - 0.5) * 0.6,
+    angle: (Math.random() - 0.5) * 0.5,
+    spin: (Math.random() - 0.5) * 0.03,
+    size: 16 + Math.random() * 18,
+    emoji: RAIN[Math.floor(Math.random() * RAIN.length)],
+    alpha: 0.35 + Math.random() * 0.45,
+  };
+}
+
+for (let i = 0; i < 30; i++) { const d = mkDrop(); d.y = Math.random() * H; drops.push(d); }
+
+(function rainLoop() {
+  ctx.clearRect(0, 0, W, H);
+  for (const d of drops) {
+    ctx.save();
+    ctx.globalAlpha = d.alpha;
+    ctx.translate(d.x, d.y);
+    ctx.rotate(d.angle);
+    ctx.font = `${d.size}px serif`;
+    ctx.fillText(d.emoji, 0, 0);
+    ctx.restore();
+    d.y += d.vy; d.x += d.vx; d.angle += d.spin;
+    if (d.y > H + 60) Object.assign(d, mkDrop());
+  }
+  requestAnimationFrame(rainLoop);
+})();
+
+// ── Reveal on click ──
+const chars = ['₹','1','1','1','1','1'];
+const row = document.getElementById('amountRow');
+
+// pre-build invisible chars
+chars.forEach((ch) => {
+  const el = document.createElement('span');
+  el.className = 'char' + (ch === '₹' ? ' rupee' : '');
+  el.textContent = ch;
+  row.appendChild(el);
+});
+
+let started = false;
+
+function startReveal() {
+  if (started) return;
+  started = true;
+
+  document.getElementById('revealBtn').classList.add('hidden');
+
+  const els = row.querySelectorAll('.char');
+  const gap = 420; // ms between each digit
+
+  els.forEach((el, i) => {
+    setTimeout(() => {
+      el.classList.add('landed');
+      if (el.textContent !== '₹') miniConfetti();
+    }, i * gap);
+  });
+
+  // after last
+  setTimeout(() => {
+    document.getElementById('glow').classList.add('visible');
+    document.getElementById('phonepeWrap').classList.add('visible');
+    document.getElementById('message').classList.add('visible');
+    bigConfetti();
+  }, (chars.length - 1) * gap + 500);
+}
+
+// ── Confetti ──
+const colors = ['#4ade80','#86efac','#f5c842','#fff','#60a5fa','#f87171','#a3e635'];
+
+function miniConfetti() {
+  const wrap = document.getElementById('confetti');
+  for (let i = 0; i < 12; i++) {
+    spawn(wrap, 5, 7, `${35+Math.random()*30}%`, `38%`, 150);
+  }
+}
+
+function bigConfetti() {
+  const wrap = document.getElementById('confetti');
+  for (let i = 0; i < 90; i++) {
+    spawn(wrap, 6, 10, `${15+Math.random()*70}%`, `${20+Math.random()*45}%`, 2000);
+  }
+}
+
+function spawn(wrap, minS, maxS, left, top, life) {
+  const d = document.createElement('div');
+  const size = minS + Math.random() * (maxS - minS);
+  const tx = `translate(${(Math.random()-0.5)*500}px, ${80+Math.random()*280}px)`;
+  const rot = `${(Math.random()-0.5)*720}deg`;
+  d.className = 'dot';
+  d.style.cssText = `
+    width:${size}px; height:${size}px;
+    background:${colors[Math.floor(Math.random()*colors.length)]};
+    border-radius:${Math.random()>0.4?'50%':'3px'};
+    left:${left}; top:${top};
+    --tx:${tx}; --rot:${rot};
+    animation-duration:${0.8+Math.random()*0.7}s;
+    animation-delay:${Math.random()*0.2}s;
+  `;
+  wrap.appendChild(d);
+  setTimeout(() => d.remove(), life);
+}
+</script>
+</body>
+</html>
